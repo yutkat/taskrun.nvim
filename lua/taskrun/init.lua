@@ -102,9 +102,9 @@ end
 function M.setup(opts)
 	opts = opts or {}
 	config = vim.tbl_deep_extend("keep", opts, config)
-	vim.api.nvim_add_user_command("TaskRun", "lua require('taskrun').run(<q-args>)", { force = true, nargs = "+" })
-	vim.api.nvim_add_user_command("TaskRunToggle", "lua require('taskrun').toggle()", { force = true, nargs = 0 })
-	vim.api.nvim_add_user_command("TaskRunLast", "lua require('taskrun').run_last()", { force = true, nargs = 0 })
+	vim.api.nvim_create_user_command("TaskRun", "lua require('taskrun').run(<q-args>)", { force = true, nargs = "+" })
+	vim.api.nvim_create_user_command("TaskRunToggle", "lua require('taskrun').toggle()", { force = true, nargs = 0 })
+	vim.api.nvim_create_user_command("TaskRunLast", "lua require('taskrun').run_last()", { force = true, nargs = 0 })
 
 	vim.cmd([[
 augroup taskrun
