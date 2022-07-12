@@ -36,6 +36,10 @@ local function get_exit_status()
 end
 
 local function send_notify()
+	if task_runner == nil or task_runner.bufnr == nil then
+		return
+	end
+	print(task_runner.bufnr)
 	if vim.api.nvim_buf_is_valid(task_runner.bufnr) then
 		local result = get_exit_status()
 		if result == nil then
@@ -99,22 +103,54 @@ function M.close()
 	end
 end
 
-function M.setup(opts)
-	opts = opts or {}
-	config = vim.tbl_deep_extend("keep", opts, config)
+local function create_commands()
 	vim.api.nvim_create_user_command("TaskRun", "lua require('taskrun').run(<q-args>)", { force = true, nargs = "+" })
 	vim.api.nvim_create_user_command("TaskRunToggle", "lua require('taskrun').toggle()", { force = true, nargs = 0 })
 	vim.api.nvim_create_user_command("TaskRunLast", "lua require('taskrun').run_last()", { force = true, nargs = 0 })
+end
 
-	vim.cmd([[
-augroup taskrun
-	autocmd!
-	autocmd TermClose term://*#toggleterm#9* ++nested if winbufnr(g:toglleterm_win_num) != -1 | execute g:toglleterm_win_num . "wincmd w" | $ | wincmd p | endif
-	autocmd TermClose term://*#toggleterm#9* ++nested lua print(require('taskrun').notify())
-	" https://github.com/neovim/neovim/issues/13078
-	autocmd VimLeavePre * lua require('taskrun').close()
-augroup END
-]])
+local function create_autocmds()
+	local group_name = "taskrun"
+	vim.api.nvim_create_augroup(group_name, { clear = true })
+	vim.api.nvim_create_autocmd({ "TermClose" }, {
+		group = group_name,
+		pattern = "term://*#toggleterm#9*",
+		callback = function()
+			if vim.fn.winbufnr(vim.g.toglleterm_win_num) ~= -1 then
+				vim.cmd(vim.g.toglleterm_win_num .. "wincmd w")
+				vim.cmd("$")
+				vim.cmd("wincmd p")
+			end
+		end,
+		once = false,
+		nested = true,
+	})
+	vim.api.nvim_create_autocmd({ "TermClose" }, {
+		group = group_name,
+		pattern = "term://*#toggleterm#9*",
+		callback = function()
+			require("taskrun").notify()
+		end,
+		once = false,
+		nested = true,
+	})
+	-- https://github.com/neovim/neovim/issues/13078
+	vim.api.nvim_create_autocmd({ "VimLeavePre" }, {
+		group = group_name,
+		pattern = "*",
+		callback = function()
+			require("taskrun").close()
+		end,
+		once = false,
+		nested = true,
+	})
+end
+
+function M.setup(opts)
+	opts = opts or {}
+	config = vim.tbl_deep_extend("keep", opts, config)
+	create_commands()
+	create_autocmds()
 end
 
 return M
