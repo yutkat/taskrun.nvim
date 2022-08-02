@@ -134,16 +134,6 @@ local function create_autocmds()
 		once = false,
 		nested = true,
 	})
-	-- https://github.com/neovim/neovim/issues/13078
-	vim.api.nvim_create_autocmd({ "VimLeavePre" }, {
-		group = group_name,
-		pattern = "*",
-		callback = function()
-			require("taskrun").close()
-		end,
-		once = false,
-		nested = true,
-	})
 end
 
 function M.setup(opts)
