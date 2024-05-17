@@ -57,7 +57,7 @@ local function send_notify()
 end
 
 function M.notify()
-	local timer = vim.loop.new_timer()
+	local timer = vim.uv.new_timer()
 	-- Because "Process exited" message is not displayed immediately after TermClose
 	timer:start(100, 0, vim.schedule_wrap(send_notify))
 end
